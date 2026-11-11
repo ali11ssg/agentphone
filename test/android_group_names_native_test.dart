@@ -16,7 +16,7 @@ void main() {
       final jar = await cachedKotlinJar(
         compiler: compiler,
         sources: [
-          'android/app/src/main/kotlin/io.github.agentphone.app/AndroidGroupNames.kt',
+          'android/app/src/main/kotlin/io/github/agentphone/app/AndroidGroupNames.kt',
           'test/native/android_group_names_harness.kt',
         ],
       );

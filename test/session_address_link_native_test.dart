@@ -17,7 +17,7 @@ void main() {
       try {
         final jar = '${directory.path}/ingress.jar';
         final compiled = await Process.run(compiler, [
-          'android/app/src/main/kotlin/io.github.agentphone.app/SessionLinkIngress.kt',
+          'android/app/src/main/kotlin/io/github/agentphone/app/SessionLinkIngress.kt',
           'test/native/session_link_ingress_harness.kt',
           '-include-runtime',
           '-d',
@@ -39,7 +39,7 @@ void main() {
     'native consumes invalid intents before bounded capture without logging',
     () {
       final activity = File(
-        'android/app/src/main/kotlin/io.github.agentphone.app/LaunchLinkChannel.kt',
+        'android/app/src/main/kotlin/io/github/agentphone/app/LaunchLinkChannel.kt',
       ).readAsStringSync();
       final start = activity.indexOf('fun capture(intent: Intent?)');
       final end = activity.indexOf('private fun isHandoffRoute', start);

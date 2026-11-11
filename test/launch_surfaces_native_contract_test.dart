@@ -11,7 +11,7 @@ import 'package:agentphone/platform/launch_shortcut.dart';
 /// preference key the tile reads, and the whitelisted action its tap sends.
 void main() {
   const androidMain = 'android/app/src/main';
-  const kotlin = '$androidMain/kotlin/io.github.agentphone.app';
+  const kotlin = '$androidMain/kotlin/io/github/agentphone/app';
   final activity = File('$kotlin/MainActivity.kt').readAsStringSync();
   final channel = File('$kotlin/LaunchShortcutChannel.kt').readAsStringSync();
   final launches = File('$kotlin/LaunchActivityBridge.kt').readAsStringSync();

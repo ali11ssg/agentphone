@@ -10,10 +10,10 @@ void main() {
       'android/app/src/main/AndroidManifest.xml',
     ).readAsStringSync();
     final activity = File(
-      'android/app/src/main/kotlin/io.github.agentphone.app/MainActivity.kt',
+      'android/app/src/main/kotlin/io/github/agentphone/app/MainActivity.kt',
     ).readAsStringSync();
     final media = File(
-      'android/app/src/main/kotlin/io.github.agentphone.app/MainActivityMedia.kt',
+      'android/app/src/main/kotlin/io/github/agentphone/app/MainActivityMedia.kt',
     ).readAsStringSync();
     final audio = File('lib/voice/audio.dart').readAsStringSync();
 

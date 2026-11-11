@@ -42,7 +42,7 @@ void main() {
     jar = await cachedKotlinJar(
       compiler: compiler,
       sources: [
-        'android/app/src/main/kotlin/io.github.agentphone.app/NativeStrings.kt',
+        'android/app/src/main/kotlin/io/github/agentphone/app/NativeStrings.kt',
         'test/native/native_strings_harness.kt',
         'test/native/native_strings_stubs/context.kt',
         'test/native/native_strings_stubs/resources.kt',

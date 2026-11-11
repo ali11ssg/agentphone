@@ -10,14 +10,14 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   const androidMain = 'android/app/src/main';
   final activity = File(
-    '$androidMain/kotlin/io.github.agentphone.app/'
+    '$androidMain/kotlin/io/github/agentphone/app/'
     'MainActivity.kt',
   ).readAsStringSync();
   final channel = File(
-    '$androidMain/kotlin/io.github.agentphone.app/LaunchShortcutChannel.kt',
+    '$androidMain/kotlin/io/github/agentphone/app/LaunchShortcutChannel.kt',
   ).readAsStringSync();
   final launches = File(
-    '$androidMain/kotlin/io.github.agentphone.app/LaunchActivityBridge.kt',
+    '$androidMain/kotlin/io/github/agentphone/app/LaunchActivityBridge.kt',
   ).readAsStringSync();
   final shortcuts = File(
     '$androidMain/res/xml/shortcuts.xml',

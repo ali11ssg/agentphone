@@ -31,7 +31,7 @@ void main() {
     );
     jar = '${temporary.path}/storage-test.jar';
     final result = await Process.run(compiler, [
-      'android/app/src/main/kotlin/io.github.agentphone.app/BuiltinProjectStorage.kt',
+      'android/app/src/main/kotlin/io/github/agentphone/app/BuiltinProjectStorage.kt',
       'test/native/builtin_project_storage_harness.kt',
       '-include-runtime',
       '-d',

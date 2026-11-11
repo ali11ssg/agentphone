@@ -407,7 +407,7 @@ void main() {
     // Emulator 2026-10-04: `paseo start --foreground --listen ...` exits at
     // once with "--listen was removed", so the check's hello never connected.
     final source = File(
-      'android/app/src/main/kotlin/io.github.agentphone.app/PhoneAgentHost.kt',
+      'android/app/src/main/kotlin/io/github/agentphone/app/PhoneAgentHost.kt',
     ).readAsStringSync();
     final launch = RegExp(
       r'exec /home/oc/\.local/bin/paseo [^\n]*',

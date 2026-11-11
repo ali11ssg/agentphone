@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 // a later merge from disconnecting the safe storage helper from real launches,
 // installation, removal, or the two native lifecycle admission locks.
 void main() {
-  const native = 'android/app/src/main/kotlin/io.github.agentphone.app';
+  const native = 'android/app/src/main/kotlin/io/github/agentphone/app';
   final linux = File('$native/BuiltinLinux.kt').readAsStringSync();
   final activity = File('$native/MainActivity.kt').readAsStringSync();
   final setup = File('$native/SetupRunner.kt').readAsStringSync();

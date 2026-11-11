@@ -15,7 +15,7 @@ void main() {
     jar = await cachedKotlinJar(
       compiler: compiler,
       sources: [
-        'android/app/src/main/kotlin/io.github.agentphone.app/PhoneAgentAuthOtherOwners.kt',
+        'android/app/src/main/kotlin/io/github/agentphone/app/PhoneAgentAuthOtherOwners.kt',
         'test/native/phone_agent_auth_other_owners_harness.kt',
       ],
     );

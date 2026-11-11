@@ -279,7 +279,7 @@ void main() {
       jar = await cachedKotlinJar(
         compiler: compiler,
         sources: [
-          'android/app/src/main/kotlin/io.github.agentphone.app/AppExitHistoryPolicy.kt',
+          'android/app/src/main/kotlin/io/github/agentphone/app/AppExitHistoryPolicy.kt',
           'test/native/app_exit_history_harness.kt',
         ],
       );

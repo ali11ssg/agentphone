@@ -38,8 +38,8 @@ void main() {
     jar = await cachedKotlinJar(
       compiler: compiler,
       sources: [
-        'android/app/src/main/kotlin/io.github.agentphone.app/NativeNotificationLocale.kt',
-        'android/app/src/main/kotlin/io.github.agentphone.app/NativeStrings.kt',
+        'android/app/src/main/kotlin/io/github/agentphone/app/NativeNotificationLocale.kt',
+        'android/app/src/main/kotlin/io/github/agentphone/app/NativeStrings.kt',
         'test/native/native_locale_refresh_harness.kt',
         'test/native/native_strings_stubs/resources.kt',
         ...Directory(

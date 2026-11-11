@@ -614,7 +614,7 @@ void main() {
     // rename on either side silently stops the event from arriving.
     expect(BackgroundLiveController.timeoutMethod, 'backgroundServiceTimeout');
     final kotlin = File(
-      'android/app/src/main/kotlin/io.github.agentphone.app/'
+      'android/app/src/main/kotlin/io/github/agentphone/app/'
       'BackgroundConnectionService.kt',
     ).readAsStringSync();
     expect(

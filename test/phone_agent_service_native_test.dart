@@ -46,9 +46,9 @@ void main() {
     jar = await cachedKotlinJar(
       compiler: compiler,
       sources: [
-        'android/app/src/main/kotlin/io.github.agentphone.app/SetupService.kt',
-        'android/app/src/main/kotlin/io.github.agentphone.app/BuiltinServerService.kt',
-        'android/app/src/main/kotlin/io.github.agentphone.app/BuiltinRestoreReceiver.kt',
+        'android/app/src/main/kotlin/io/github/agentphone/app/SetupService.kt',
+        'android/app/src/main/kotlin/io/github/agentphone/app/BuiltinServerService.kt',
+        'android/app/src/main/kotlin/io/github/agentphone/app/BuiltinRestoreReceiver.kt',
         'test/native/phone_agent_service_harness.kt',
         ...(Directory(
             'test/native/phone_agent_service_stubs',

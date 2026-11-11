@@ -29,7 +29,7 @@ void main() {
     jar = await cachedKotlinJar(
       compiler: compiler,
       sources: [
-        'android/app/src/androidTest/kotlin/io.github.agentphone.app/Bb8MainCallback.kt',
+        'android/app/src/androidTest/kotlin/io/github/agentphone/app/Bb8MainCallback.kt',
         'test/native/bb8_main_callback_harness.kt',
       ],
     );

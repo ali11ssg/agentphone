@@ -27,7 +27,7 @@ void main() {
   late Directory temporary;
   late String jar;
   late String jsonJar;
-  const native = 'android/app/src/main/kotlin/io.github.agentphone.app';
+  const native = 'android/app/src/main/kotlin/io/github/agentphone/app';
   const scenarios = [
     'request-admission',
     'request-rejection',

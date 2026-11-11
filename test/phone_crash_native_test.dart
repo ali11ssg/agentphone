@@ -10,7 +10,7 @@ void main() {
       '${Platform.environment['HOME']}/.sdkman/candidates/kotlin/current/bin/kotlinc';
   final available = File(compiler).existsSync();
   late String jar;
-  const native = 'android/app/src/main/kotlin/io.github.agentphone.app';
+  const native = 'android/app/src/main/kotlin/io/github/agentphone/app';
   setUpAll(() async {
     if (!available) return;
     jar = await cachedKotlinJar(

@@ -226,7 +226,7 @@ void main() {
   });
 
   group('the native half', () {
-    const kotlin = 'android/app/src/main/kotlin/io.github.agentphone.app';
+    const kotlin = 'android/app/src/main/kotlin/io/github/agentphone/app';
     final service = File('$kotlin/SetupService.kt').readAsStringSync();
     final runner = File('$kotlin/SetupRunner.kt').readAsStringSync();
 

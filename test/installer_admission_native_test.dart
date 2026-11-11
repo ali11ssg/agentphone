@@ -38,7 +38,7 @@ void main() {
       'oc-installer-admission-',
     );
     jar = '${temporary.path}/admission.jar';
-    const sources = 'android/app/src/main/kotlin/io.github.agentphone.app';
+    const sources = 'android/app/src/main/kotlin/io/github/agentphone/app';
     final linux = await File('$sources/BuiltinLinux.kt').readAsString();
     final reclaim = _member(linux, 'private fun reclaimDeadInstaller(');
     final checkAdmission = _member(linux, 'private fun admitCheckProcess(');

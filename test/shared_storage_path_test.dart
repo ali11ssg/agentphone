@@ -45,7 +45,7 @@ void main() {
 
   test('the storage permission is declared and bound only outside the '
       'confined tier, with nothing stored for it', () {
-    const native = 'android/app/src/main/kotlin/io.github.agentphone.app';
+    const native = 'android/app/src/main/kotlin/io/github/agentphone/app';
     final manifest = File(
       'android/app/src/main/AndroidManifest.xml',
     ).readAsStringSync();

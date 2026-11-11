@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  const kotlin = 'android/app/src/main/kotlin/io.github.agentphone.app';
+  const kotlin = 'android/app/src/main/kotlin/io/github/agentphone/app';
   final manifest = File(
     'android/app/src/main/AndroidManifest.xml',
   ).readAsStringSync();

@@ -10,7 +10,7 @@ void main() {
   test('every agent launch that sets CLAUDE_CONFIG_DIR sets CLAUDE_HOME to '
       'the same folder', () {
     final source = File(
-      'android/app/src/main/kotlin/io.github.agentphone.app/BuiltinLinux.kt',
+      'android/app/src/main/kotlin/io/github/agentphone/app/BuiltinLinux.kt',
     ).readAsStringSync();
     final launches = RegExp(
       r'listOf\("/usr/bin/env", "HOME=\$guestHome", "CLAUDE_CONFIG_DIR=\$guestHome/claude",\s*"CLAUDE_HOME=\$guestHome/claude",',

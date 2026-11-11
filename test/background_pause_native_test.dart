@@ -15,8 +15,8 @@ void main() {
     jar = await cachedKotlinJar(
       compiler: compiler,
       sources: [
-        'android/app/src/main/kotlin/io.github.agentphone.app/BackgroundPauseReceipt.kt',
-        'android/app/src/main/kotlin/io.github.agentphone.app/BackgroundPauseStore.kt',
+        'android/app/src/main/kotlin/io/github/agentphone/app/BackgroundPauseReceipt.kt',
+        'android/app/src/main/kotlin/io/github/agentphone/app/BackgroundPauseStore.kt',
         'test/native/background_pause_harness.kt',
         'test/native/background_pause_stubs/context.kt',
         'test/native/background_pause_stubs/activity.kt',

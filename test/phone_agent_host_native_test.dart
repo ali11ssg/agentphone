@@ -17,7 +17,7 @@ void main() {
     if (skip != null) return;
     temporary = Directory.systemTemp.createTempSync('host-native-test-');
     final runner = File(
-      'android/app/src/main/kotlin/io.github.agentphone.app/SetupRunner.kt',
+      'android/app/src/main/kotlin/io/github/agentphone/app/SetupRunner.kt',
     ).readAsStringSync();
     final guard = runner
         .substring(
@@ -32,10 +32,10 @@ void main() {
     jar = await cachedKotlinJar(
       compiler: compiler,
       sources: [
-        'android/app/src/main/kotlin/io.github.agentphone.app/PhoneAgentHost.kt',
-        'android/app/src/main/kotlin/io.github.agentphone.app/PhoneAgentInventory.kt',
-        'android/app/src/main/kotlin/io.github.agentphone.app/PhoneAgentChecks.kt',
-        'android/app/src/main/kotlin/io.github.agentphone.app/PaseoStaleLock.kt',
+        'android/app/src/main/kotlin/io/github/agentphone/app/PhoneAgentHost.kt',
+        'android/app/src/main/kotlin/io/github/agentphone/app/PhoneAgentInventory.kt',
+        'android/app/src/main/kotlin/io/github/agentphone/app/PhoneAgentChecks.kt',
+        'android/app/src/main/kotlin/io/github/agentphone/app/PaseoStaleLock.kt',
         helper.path,
         'test/native/phone_agent_host_harness.kt',
         'test/native/phone_agent_host_stubs/os.kt',

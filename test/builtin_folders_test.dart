@@ -341,7 +341,7 @@ void main() {
   test('Ubuntu\'s place on the phone matches the Android side', () {
     // BuiltinRootfsFolders.locateRootfs mirrors these three lines.
     final kotlin = File(
-      'android/app/src/main/kotlin/io.github.agentphone.app/'
+      'android/app/src/main/kotlin/io/github/agentphone/app/'
       'BuiltinLinux.kt',
     ).readAsStringSync();
     expect(kotlin, contains('val home = File(context.filesDir, "linux")'));

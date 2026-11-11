@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:xml/xml.dart';
 
 const _resources = 'android/app/src/main/res';
-const _kotlin = 'android/app/src/main/kotlin/io.github.agentphone.app/';
+const _kotlin = 'android/app/src/main/kotlin/io/github/agentphone/app/';
 const _background = '${_kotlin}BackgroundConnectionService.kt';
 
 /// The files that draw notifications from native copy: the alert service, the

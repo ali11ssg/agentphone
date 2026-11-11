@@ -31,7 +31,7 @@ void main() {
     if (skip != null) return;
     temporary = await Directory.systemTemp.createTemp('oc-agent-paths-native-');
     jar = '${temporary.path}/paths.jar';
-    const sources = 'android/app/src/main/kotlin/io.github.agentphone.app';
+    const sources = 'android/app/src/main/kotlin/io/github/agentphone/app';
     final linux = await File('$sources/BuiltinLinux.kt').readAsString();
     final begin = linux.indexOf('val agentRoot = if (agentUser)');
     final end = linux.indexOf('val command = listOf(', begin);

@@ -36,7 +36,7 @@ void main() {
     temporary = await Directory.systemTemp.createTemp('oc-installer-monitor-');
     jar = '${temporary!.path}/monitor.jar';
     const source =
-        'android/app/src/main/kotlin/io.github.agentphone.app/BuiltinLinux.kt';
+        'android/app/src/main/kotlin/io/github/agentphone/app/BuiltinLinux.kt';
     final reference = Platform.environment['OC_INSTALLER_SOURCE_REF'];
     final String linux;
     if (reference != null && reference.isNotEmpty) {
@@ -71,7 +71,7 @@ void main() {
       [
         fixture.path,
         // The monitor's /proc race rules and its interrupted-step error.
-        'android/app/src/main/kotlin/io.github.agentphone.app/NativeProcRace.kt',
+        'android/app/src/main/kotlin/io/github/agentphone/app/NativeProcRace.kt',
         '-include-runtime',
         '-d',
         jar,

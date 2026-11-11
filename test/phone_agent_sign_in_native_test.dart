@@ -9,7 +9,7 @@ import 'package:agentphone/domain/agent_catalog.dart';
 /// and chat included, because the folder its `CODEX_HOME` names was never
 /// made.
 void main() {
-  const native = 'android/app/src/main/kotlin/io.github.agentphone.app';
+  const native = 'android/app/src/main/kotlin/io/github/agentphone/app';
   final linux = File('$native/BuiltinLinux.kt').readAsStringSync();
 
   String body(String signature) {

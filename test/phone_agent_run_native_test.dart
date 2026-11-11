@@ -28,7 +28,7 @@ void main() {
     if (skip != null) return;
     temporary = await Directory.systemTemp.createTemp('oc-agent-run-native-');
     jar = '${temporary.path}/run.jar';
-    const sources = 'android/app/src/main/kotlin/io.github.agentphone.app';
+    const sources = 'android/app/src/main/kotlin/io/github/agentphone/app';
     final linux = await File('$sources/BuiltinLinux.kt').readAsString();
     final begin = linux.indexOf('    fun run(script: String,');
     final end = linux.indexOf('    /**\n     * Starts [script]', begin);

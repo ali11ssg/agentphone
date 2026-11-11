@@ -7,7 +7,7 @@ import 'package:agentphone/paseo/tested_versions.dart';
 /// the app's native side must see a sign-in made in the Terminal, and must
 /// accept every Claude build the app is qualified with.
 void main() {
-  const native = 'android/app/src/main/kotlin/io.github.agentphone.app';
+  const native = 'android/app/src/main/kotlin/io/github/agentphone/app';
 
   test('every app launch of Claude shares the Terminal sign-in folder', () {
     final linux = File('$native/BuiltinLinux.kt').readAsStringSync();

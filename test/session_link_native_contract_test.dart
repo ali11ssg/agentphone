@@ -12,14 +12,14 @@ import 'package:agentphone/domain/team_link.dart';
 void main() {
   const androidMain = 'android/app/src/main';
   final links = File(
-    '$androidMain/kotlin/io.github.agentphone.app/'
+    '$androidMain/kotlin/io/github/agentphone/app/'
     'LaunchLinkChannel.kt',
   ).readAsStringSync();
   final activity = File(
-    '$androidMain/kotlin/io.github.agentphone.app/MainActivity.kt',
+    '$androidMain/kotlin/io/github/agentphone/app/MainActivity.kt',
   ).readAsStringSync();
   final launches = File(
-    '$androidMain/kotlin/io.github.agentphone.app/LaunchActivityBridge.kt',
+    '$androidMain/kotlin/io/github/agentphone/app/LaunchActivityBridge.kt',
   ).readAsStringSync();
   final manifest = File('$androidMain/AndroidManifest.xml').readAsStringSync();
 
