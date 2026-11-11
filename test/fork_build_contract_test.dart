@@ -32,13 +32,22 @@ void main() {
     });
 
     test('the F-Droid answer is the shipping answer: there is one build', () {
-      expect(
-        const PlatformCapabilities(
-          platform: TargetPlatform.android,
-          fdroid: true,
-        ),
-        const PlatformCapabilities(platform: TargetPlatform.android),
+      // The upstream comparison checked whole-object equality against a build
+      // with the F-Droid flag set, and == compares that flag: it can only pass
+      // when the test itself is compiled with the flag. This fork ships one
+      // build with no F-Droid variant, so what matters is that the flag does
+      // not change a single capability.
+      const fdroid = PlatformCapabilities(
+        platform: TargetPlatform.android,
+        fdroid: true,
       );
+      const normal = PlatformCapabilities(platform: TargetPlatform.android);
+      expect(fdroid.supportsVoice, normal.supportsVoice);
+      expect(fdroid.supportsQrPairing, normal.supportsQrPairing);
+      expect(fdroid.supportsCodePush, normal.supportsCodePush);
+      expect(fdroid.supportsThisPhone, normal.supportsThisPhone);
+      expect(fdroid.supportsBackgroundService, normal.supportsBackgroundService);
+      expect(fdroid.supportsNotifications, normal.supportsNotifications);
     });
   });
 

@@ -4,9 +4,9 @@ name: agentphone-android
 # signed release APK on a version tag.
 #
 # The phone cannot build APKs (aapt2 has no linux-arm64 build), so this
-# runner is the compiler. Versions are pinned: never "latest". The actions are
-# pinned by their release tag (the upstream pins by SHA; its SHAs do not all
-# resolve outside its repository).
+# runner is the compiler. Every tool and action is pinned to one version.
+# The actions are pinned by their release tag; the upstream pins by commit
+# SHA, and those SHAs do not all resolve outside its repository.
 
 on:
   push:
@@ -30,7 +30,7 @@ jobs:
   # parallel shards.
   analyze:
     name: format and analyze
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-java@v6.2.0
@@ -66,7 +66,7 @@ jobs:
   tests:
     name: unit tests (shard ${{ matrix.shard }} of ${{ strategy.job-total }})
     needs: analyze
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -96,7 +96,7 @@ jobs:
   gates:
     name: repository gates
     needs: analyze
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7.0.1
       - name: Repository gates (permissions, analytics, secrets, licenses)
@@ -106,7 +106,7 @@ jobs:
     name: signed release APK
     needs: [analyze, tests, gates]
     if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7.0.1
         with:

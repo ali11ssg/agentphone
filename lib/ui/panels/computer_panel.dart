@@ -8,6 +8,9 @@
 /// Everything the panel shows is masked with [KitRedact] before it is drawn,
 /// so a key that appears in a command or in an output never reaches the
 /// screen, the clipboard or a screenshot.
+///
+/// The panel is built from the kit only (kit-v2 §9): no framework text, icon,
+/// button or row is constructed here.
 library;
 
 import 'package:flutter/material.dart';
@@ -15,9 +18,7 @@ import 'package:flutter/material.dart';
 import '../../domain/computer_panel.dart';
 import '../../l10n/app_localizations.dart';
 import '../app_iconography.dart';
-import '../kit/kit_redact.dart';
-import '../kit/kit_tokens.dart';
-import '../theme_roles.dart';
+import '../kit/kit.dart';
 
 /// How much of the screen the panel takes.
 enum ComputerPanelSize { collapsed, half, full }
@@ -81,34 +82,26 @@ class _ComputerPanelState extends State<ComputerPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final roles = ThemeRoles.of(context);
     final tokens = KitTokens.of(context);
     final model = widget.model;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
+    return SizedBox(
       height: _heightFor(context),
-      decoration: BoxDecoration(
-        color: roles.surface1,
-        border: Border(top: BorderSide(color: roles.hairline)),
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(tokens.sheetRadius),
+      child: KitPanel(
+        padding: EdgeInsets.zero,
+        child: Column(
+          children: [
+            _header(context, tokens, model),
+            if (_size != ComputerPanelSize.collapsed)
+              Expanded(child: _body(context, tokens, model)),
+          ],
         ),
-      ),
-      child: Column(
-        children: [
-          _header(context, roles, tokens, model),
-          if (_size != ComputerPanelSize.collapsed)
-            Expanded(child: _body(context, roles, tokens, model)),
-        ],
       ),
     );
   }
 
   Widget _header(
     BuildContext context,
-    ThemeRoles roles,
     KitTokens tokens,
     ComputerPanelModel model,
   ) {
@@ -117,7 +110,7 @@ class _ComputerPanelState extends State<ComputerPanel> {
     return Padding(
       padding: EdgeInsets.only(
         left: tokens.space4,
-        right: tokens.space2,
+        right: tokens.space1,
         top: tokens.space2,
         bottom: tokens.space1,
       ),
@@ -126,38 +119,37 @@ class _ComputerPanelState extends State<ComputerPanel> {
         children: [
           Row(
             children: [
-              Icon(
+              const KitIcon(
                 AppIconography.terminal,
-                size: 18,
-                color: roles.text2,
+                size: KitIconSize.small,
+                tone: KitTextTone.secondary,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: tokens.space2),
               Expanded(
-                child: Text(
+                child: KitText(
                   latest == null
                       ? l10n.computerPanelIdle
                       : KitRedact.text(latest.title),
+                  role: KitTextRole.secondary,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: roles.text1, fontSize: 13),
                 ),
               ),
               if (model.busy && widget.onTakeOver != null)
-                TextButton(
+                KitButton.tertiary(
                   key: const ValueKey('computer-panel-take-over'),
+                  label: l10n.computerPanelTakeOver,
                   onPressed: () => widget.onTakeOver!(),
-                  child: Text(l10n.computerPanelTakeOver),
                 ),
-              IconButton(
+              KitIconButton(
                 key: const ValueKey('computer-panel-size'),
+                tooltip: l10n.computerPanelOpen,
+                icon: _size == ComputerPanelSize.full
+                    ? AppIconography.chevronDown
+                    : AppIconography.chevronUp,
                 onPressed: _cycleSize,
-                icon: Icon(
-                  _size == ComputerPanelSize.full
-                      ? AppIconography.chevronDown
-                      : AppIconography.chevronUp,
-                  size: 20,
-                  color: roles.text2,
-                ),
+                size: 20,
+                quiet: true,
               ),
             ],
           ),
@@ -165,7 +157,7 @@ class _ComputerPanelState extends State<ComputerPanel> {
             Row(
               children: [
                 for (var index = 0; index < _tabs.length; index++)
-                  _tabButton(context, roles, tokens, model, index),
+                  _tabButton(context, tokens, model, index),
               ],
             ),
         ],
@@ -175,7 +167,6 @@ class _ComputerPanelState extends State<ComputerPanel> {
 
   Widget _tabButton(
     BuildContext context,
-    ThemeRoles roles,
     KitTokens tokens,
     ComputerPanelModel model,
     int index,
@@ -187,7 +178,6 @@ class _ComputerPanelState extends State<ComputerPanel> {
       ComputerEventKind.plan => model.plan.length,
       ComputerEventKind.page => model.pages.length,
     };
-    final selected = _tab == index;
     final l10n = lookupAppLocalizations(Localizations.localeOf(context));
     final label = switch (kind) {
       ComputerEventKind.command => l10n.computerPanelTabTerminal,
@@ -197,62 +187,55 @@ class _ComputerPanelState extends State<ComputerPanel> {
     };
     return Padding(
       padding: EdgeInsets.only(right: tokens.space2),
-      child: TextButton(
+      child: KitButton.tertiary(
         key: ValueKey('computer-panel-tab-$index'),
+        label: count == 0 ? label : '$label · $count',
         onPressed: () => setState(() => _tab = index),
-        style: TextButton.styleFrom(
-          foregroundColor: selected ? roles.accent : roles.text2,
-          padding: EdgeInsets.symmetric(horizontal: tokens.space2),
-          minimumSize: Size.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-        child: Text(count == 0 ? label : '$label · $count'),
       ),
     );
   }
 
   Widget _body(
     BuildContext context,
-    ThemeRoles roles,
     KitTokens tokens,
     ComputerPanelModel model,
   ) {
     final kind = _tabs[_tab];
     return switch (kind) {
-      ComputerEventKind.command => _terminalTab(context, roles, tokens, model),
-      ComputerEventKind.edit => _editsTab(context, roles, tokens, model),
-      ComputerEventKind.plan => _planTab(context, roles, tokens, model),
-      ComputerEventKind.page => _pagesTab(context, roles, tokens, model),
+      ComputerEventKind.command => _terminalTab(context, tokens, model),
+      ComputerEventKind.edit => _editsTab(context, tokens, model),
+      ComputerEventKind.plan => _planTab(context, tokens, model),
+      ComputerEventKind.page => _pagesTab(context, tokens, model),
     };
   }
 
+  EdgeInsets _listPadding(KitTokens tokens) => EdgeInsets.fromLTRB(
+    tokens.space3,
+    tokens.space2,
+    tokens.space3,
+    tokens.space4,
+  );
+
   Widget _terminalTab(
     BuildContext context,
-    ThemeRoles roles,
     KitTokens tokens,
     ComputerPanelModel model,
   ) {
     final commands = model.commands;
-    if (commands.isEmpty) return _empty(context, roles);
+    if (commands.isEmpty) return _empty(context);
     return ListView.builder(
       key: const ValueKey('computer-panel-terminal-list'),
-      padding: EdgeInsets.fromLTRB(
-        tokens.space3,
-        tokens.space2,
-        tokens.space3,
-        tokens.space4,
-      ),
+      padding: _listPadding(tokens),
       itemCount: commands.length,
       itemBuilder: (context, index) {
         final event = commands[commands.length - 1 - index];
-        return _commandEntry(context, roles, tokens, event);
+        return _commandEntry(context, tokens, event);
       },
     );
   }
 
   Widget _commandEntry(
     BuildContext context,
-    ThemeRoles roles,
     KitTokens tokens,
     ComputerEvent event,
   ) {
@@ -269,44 +252,35 @@ class _ComputerPanelState extends State<ComputerPanel> {
               if (event.risky)
                 Padding(
                   padding: EdgeInsets.only(right: tokens.space1),
-                  child: Icon(
+                  child: const KitIcon(
                     AppIconography.warning,
-                    size: 16,
-                    color: roles.attention,
+                    size: KitIconSize.small,
+                    tone: KitTextTone.attention,
                   ),
                 ),
               Expanded(
-                child: SelectableText(
+                child: KitText.mono(
                   KitRedact.text(event.command ?? event.title),
-                  style: TextStyle(
-                    color: roles.text1,
-                    fontFamily: 'monospace',
-                    fontSize: 12.5,
-                  ),
+                  selectable: true,
                 ),
               ),
             ],
           ),
           SizedBox(height: tokens.space1),
-          Text(
+          KitText(
             _metaLine(l10n, event),
-            style: TextStyle(color: roles.text3, fontSize: 11.5),
+            role: KitTextRole.caption,
+            tone: KitTextTone.tertiary,
           ),
           if (output != null && output.trim().isNotEmpty)
-            Container(
-              margin: EdgeInsets.only(top: tokens.space1),
-              padding: EdgeInsets.all(tokens.space2),
-              decoration: BoxDecoration(
-                color: roles.surface2,
-                borderRadius: BorderRadius.circular(tokens.panelRadius),
-              ),
-              child: SelectableText(
-                KitRedact.text(_trimOutput(output)),
-                style: TextStyle(
-                  color: roles.text2,
-                  fontFamily: 'monospace',
-                  fontSize: 11.5,
-                  height: 1.35,
+            Padding(
+              padding: EdgeInsets.only(top: tokens.space1),
+              child: KitPanel(
+                padding: EdgeInsets.all(tokens.space2),
+                child: KitText.mono(
+                  KitRedact.text(_trimOutput(output)),
+                  selectable: true,
+                  tone: KitTextTone.secondary,
                 ),
               ),
             ),
@@ -340,37 +314,26 @@ class _ComputerPanelState extends State<ComputerPanel> {
 
   Widget _editsTab(
     BuildContext context,
-    ThemeRoles roles,
     KitTokens tokens,
     ComputerPanelModel model,
   ) {
     final edits = model.edits;
-    if (edits.isEmpty) return _empty(context, roles);
+    if (edits.isEmpty) return _empty(context);
     return ListView.builder(
       key: const ValueKey('computer-panel-files-list'),
-      padding: EdgeInsets.fromLTRB(
-        tokens.space3,
-        tokens.space2,
-        tokens.space3,
-        tokens.space4,
-      ),
+      padding: _listPadding(tokens),
       itemCount: edits.length,
       itemBuilder: (context, index) {
         final event = edits[edits.length - 1 - index];
-        return ListTile(
+        return KitRow(
           key: ValueKey('computer-panel-file-$index'),
-          dense: true,
-          leading: Icon(
+          leading: const KitIcon(
             AppIconography.file,
-            size: 18,
-            color: roles.text2,
+            size: KitIconSize.small,
+            tone: KitTextTone.secondary,
           ),
-          title: Text(
-            KitRedact.text(event.title),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: roles.text1, fontSize: 12.5),
-          ),
+          title: KitRedact.text(event.title),
+          titleMaxLines: 2,
           onTap: widget.onOpenFiles,
         );
       },
@@ -379,80 +342,57 @@ class _ComputerPanelState extends State<ComputerPanel> {
 
   Widget _planTab(
     BuildContext context,
-    ThemeRoles roles,
     KitTokens tokens,
     ComputerPanelModel model,
   ) {
     final plan = model.plan;
-    if (plan.isEmpty) return _empty(context, roles);
+    if (plan.isEmpty) return _empty(context);
     final last = plan.last;
     final text = last.output ?? '';
     return ListView(
       key: const ValueKey('computer-panel-plan-list'),
-      padding: EdgeInsets.fromLTRB(
-        tokens.space3,
-        tokens.space2,
-        tokens.space3,
-        tokens.space4,
-      ),
+      padding: _listPadding(tokens),
       children: [
-        SelectableText(
-          KitRedact.text(text),
-          style: TextStyle(
-            color: roles.text1,
-            fontFamily: 'monospace',
-            fontSize: 12.5,
-            height: 1.45,
-          ),
-        ),
+        KitText.mono(KitRedact.text(text), selectable: true),
       ],
     );
   }
 
   Widget _pagesTab(
     BuildContext context,
-    ThemeRoles roles,
     KitTokens tokens,
     ComputerPanelModel model,
   ) {
     final pages = model.pages;
-    if (pages.isEmpty) return _empty(context, roles);
+    if (pages.isEmpty) return _empty(context);
     return ListView.builder(
       key: const ValueKey('computer-panel-browser-list'),
-      padding: EdgeInsets.fromLTRB(
-        tokens.space3,
-        tokens.space2,
-        tokens.space3,
-        tokens.space4,
-      ),
+      padding: _listPadding(tokens),
       itemCount: pages.length,
       itemBuilder: (context, index) {
         final event = pages[pages.length - 1 - index];
-        return ListTile(
+        return KitRow(
           key: ValueKey('computer-panel-page-$index'),
-          dense: true,
-          leading: Icon(
+          leading: const KitIcon(
             AppIconography.browser,
-            size: 18,
-            color: roles.text2,
+            size: KitIconSize.small,
+            tone: KitTextTone.secondary,
           ),
-          title: Text(
-            KitRedact.text(event.title),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: roles.text1, fontSize: 12.5),
-          ),
+          title: KitRedact.text(event.title),
+          titleMaxLines: 2,
+          onTap: widget.onOpenTerminal,
         );
       },
     );
   }
 
-  Widget _empty(BuildContext context, ThemeRoles roles) {
+  Widget _empty(BuildContext context) {
     final l10n = lookupAppLocalizations(Localizations.localeOf(context));
     return Center(
-      child: Text(
+      child: KitText(
         l10n.computerPanelEmpty,
-        style: TextStyle(color: roles.text3, fontSize: 12.5),
+        role: KitTextRole.secondary,
+        tone: KitTextTone.tertiary,
       ),
     );
   }
@@ -479,19 +419,16 @@ Future<void> showComputerPanel(
   VoidCallback? onOpenTerminal,
   VoidCallback? onOpenFiles,
 }) {
-  return showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withValues(alpha: 0.45),
-    builder: (context) => Padding(
-      padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
-      child: ComputerPanel(
-        model: model,
-        onTakeOver: onTakeOver,
-        onOpenTerminal: onOpenTerminal,
-        onOpenFiles: onOpenFiles,
-      ),
+  final l10n = lookupAppLocalizations(Localizations.localeOf(context));
+  return showKitSheet<void>(
+    context,
+    title: l10n.computerPanelOpen,
+    height: KitSheetHeight.full,
+    body: (context) => ComputerPanel(
+      model: model,
+      onTakeOver: onTakeOver,
+      onOpenTerminal: onOpenTerminal,
+      onOpenFiles: onOpenFiles,
     ),
   );
 }

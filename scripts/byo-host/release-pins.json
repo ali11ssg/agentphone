@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "openCodeVersion": "2.1.1",
+  "bundleVersion": "2.0.0",
+  "upstreamProvenance": {
+    "source": "https://registry.npmjs.org/@opencode/cli/2.1.1",
+    "observedOn": "2026-10-21",
+    "digestSource": "Same official npm tarballs and reviewed SHA-256 as lib/builtin/setup/components.dart; SHA-512 integrity verified against the registry on 2026-10-21 (docs/qa/opencode-2.1-2026-10-21)"
+  },
+  "artifacts": {
+    "amd64": {
+      "url": "https://registry.npmjs.org/@opencode/cli-linux-x64-baseline/-/cli-linux-x64-baseline-2.1.1.tgz",
+      "sha256": "216d3861d0a167adad5850282439bae13483203f4b110f0510f260118bba2858"
+    },
+    "arm64": {
+      "url": "https://registry.npmjs.org/@opencode/cli-linux-arm64/-/cli-linux-arm64-2.1.1.tgz",
+      "sha256": "cfa3ae6363fc3082f03072297069d81f53559a761371fdb4b56fe6bfa01ca066"
+    }
+  },
+  "appVersions": {}
+}

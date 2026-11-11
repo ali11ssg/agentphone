@@ -1,0 +1,65 @@
+name: agentphone-goldens
+
+# Maintenance only: regenerates the golden PNGs after an intentional visual
+# change (the rename, the new launcher icon, the Computer panel entry point).
+# It never runs on a push and it never commits: it uploads the rendered images
+# as an artifact, a human reviews them, and a normal commit carries them in.
+# The golden tests stay enforced on every push.
+on:
+  workflow_dispatch:
+    inputs:
+      paths:
+        description: "Test paths to render (space separated)"
+        required: false
+        default: "test/goldens test/revamp"
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: "3.47.2"
+  JAVA_VERSION: "17"
+
+jobs:
+  update:
+    name: render the goldens
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: actions/setup-java@v6.2.0
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - uses: subosito/flutter-action@v2.23.0
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Render
+        run: |
+          set -euo pipefail
+          flutter test --no-pub --concurrency=2 --update-goldens ${{ github.event.inputs.paths }} || true
+          git status --porcelain -- '*.png' | head -100
+
+      - name: Collect the changed images
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/changed
+          git diff --name-only --diff-filter=M -- '*.png' > /tmp/changed/list.txt
+          wc -l /tmp/changed/list.txt
+          while read -r f; do
+            mkdir -p "/tmp/changed/$(dirname "$f")"
+            cp "$f" "/tmp/changed/$f"
+          done < /tmp/changed/list.txt
+          tar -czf /tmp/goldens.tar.gz -C /tmp/changed .
+
+      - uses: actions/upload-artifact@v7.0.2
+        with:
+          name: changed-goldens
+          path: /tmp/goldens.tar.gz
+          if-no-files-found: error
