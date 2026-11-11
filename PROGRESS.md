@@ -90,3 +90,15 @@
 3. 8 أذونات فقط. 4. التوقيع PKCS12 خارج المستودع. 5. لا ترقية لـ `opencode2` في بيئة هذه الجلسة.
 6. البناء = GitHub Actions فقط. 7. `applicationId` مختلف عن الأصلي.
 8. `dart format` يُفحص على الملفات التي يغيّرها الدفع فقط (المستودع الأصلي ليس بالصيغة الجديدة).
+
+## 2026-11-11 17:45 — first CI cycle
+
+- Pushed the fork to ali11ssg/agentphone (main = 0ca233b) after the
+  `workflow` scope was granted; verified with ls-remote.
+- Signing secrets uploaded (three of them).
+- First CI runs failed in 5 s: the upstream's action pins by SHA do not
+  resolve here; switched to release tags.
+- `flutter analyze` now passes on the runner.
+- `flutter test --concurrency=1` was too slow for ~1400 test files; raised to
+  4 (all tests still run, nothing skipped).
+- Version moved to 1.0.1+2 so the first release has its own tag.

@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.0.1+2 — AgentPhone first build
+
+The first AgentPhone build: a hardened fork of opencode-mobile-next 2.1.5+63.
+
+- Firebase, analytics and telemetry removed; a no-op adapter is always wired.
+- Permissions reduced to eight: INTERNET, POST_NOTIFICATIONS,
+  FOREGROUND_SERVICE, FOREGROUND_SERVICE_SPECIAL_USE,
+  FOREGROUND_SERVICE_DATA_SYNC, WAKE_LOCK, USE_BIOMETRIC and
+  REQUEST_IGNORE_BATTERY_OPTIMIZATIONS. Camera, microphone, external storage,
+  install packages and exact alarms are gone, and the features that needed
+  them are disabled.
+- Own identity: io.github.agentphone.app, AgentPhone label, new launcher icon.
+- New Computer panel: terminal, files with diff, plan and browser tabs.
+- Risky commands are never auto-approved; a per-task cost limit stops a run.
+
 This project is in public alpha. Only the newest preview is supported.
 
 ## 2.1.5+63 — draft, not released
