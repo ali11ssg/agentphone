@@ -1,0 +1,305 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <!-- The OpenCode server running inside the app (BuiltinServerService). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <!-- Keeps the phone awake while a reply runs on the in-app server
+         (BuiltinLinux.holdAwakeForWork; every hold times out). -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <!-- Biometric app lock (Settings > Security). -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
+    <!-- required="false" so a device with no camera can still install and
+         pair by pasting. the camera plugin's own manifest declares both of these
+         identically; they are repeated here because a permission the app
+         requests should be readable in the app's own manifest rather than
+         inherited invisibly from a plugin. -->
+    <!-- Shared-storage projects (a folder under /sdcard). Asked for only when
+         the person opens or creates such a project, after a plain
+         explanation (StorageAccess.kt); never at start-up and never for the
+         app's own project space. API 30+ uses All files access; older
+         Androids use the classic storage permissions. -->
+    <!-- Package visibility (Android 11+) for the apps this one hands off to -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE"/>
+        </intent>
+        <package android:name="com.tailscale.ipn" />
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT"/>
+            <data android:mimeType="text/plain"/>
+        </intent>
+    </queries>
+    <application
+        android:label="${appLabel}"
+        android:name=".OcApplication"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:usesCleartextTraffic="false"
+        android:enableOnBackInvokedCallback="true"
+        android:manageSpaceActivity=".ManageSpaceActivity"
+        android:networkSecurityConfig="@xml/network_security_config">
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.localfiles"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/local_file_paths"/>
+        </provider>
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            <!-- Specifies an Android theme to apply to this Activity as soon as
+                 the Android process has started. This theme is visible to the user
+                 while the Flutter UI initializes. After that, this theme continues
+                 to determine the Window background behind the Flutter UI. -->
+            <meta-data
+              android:name="io.flutter.embedding.android.NormalTheme"
+              android:resource="@style/NormalTheme"
+              />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <!-- Share target: text shared from any app lands in a new session. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <!-- Session handoff link (backlog F4-S2): the QR another phone
+                 shows encodes agentphone://session?profile=…&session=…
+                 with route identifiers only. The same session host also admits
+                 /v2 to the local bounded parser; v2 never automatically connects.
+                 MainActivity.captureSessionLink
+                 forwards the URI text to Dart over oc/link; Dart validates
+                 it and decides whether the saved server exists here. Nothing
+                 here connects, creates a session or sends a prompt. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="opencode-mobile" android:host="session" />
+                <!-- AI Team link (TEAM-203): agentphone://team/gate/<profile>/<gate>
+                     or …/run/<profile>/<run>, route identifiers only, captured
+                     by the same captureSessionLink bridge. -->
+                <data android:scheme="opencode-mobile" android:host="team" />
+            </intent-filter>
+            <!-- Static launcher shortcuts (Connect, New task). The shortcut
+                 intents are explicit and carry the oc.shortcut extra that
+                 MainActivity whitelists and forwards to Dart. -->
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="${appShortcuts}" />
+        </activity>
+        <!-- App info › Storage: "Clear storage" becomes "Manage space" and
+             opens this page first (ManageSpaceActivity.kt): what clearing
+             deletes (the in-app server, its projects and conversations),
+             Export projects first, Clear the app's cache only, and Delete
+             everything after an explicit confirm. Its own Flutter engine
+             runs manageSpaceMain, so it works while the app is not running.
+             Exported for Settings; it reads no extras. -->
+        <activity
+            android:name=".ManageSpaceActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            <meta-data
+              android:name="io.flutter.embedding.android.NormalTheme"
+              android:resource="@style/NormalTheme"
+              />
+        </activity>
+        <!-- widgetOverlayMain (lib/widgets_overlay) and its three routes ship. -->
+        <meta-data android:name="io.github.agentphone.app.WIDGET_OVERLAY_READY"
+            android:value="true" />
+        <activity android:name=".WidgetConfigureActivity" android:exported="true"
+            android:excludeFromRecents="true" android:theme="@style/WidgetOverlayTheme">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".WidgetRouteActivity" android:exported="false"
+            android:excludeFromRecents="true" android:theme="@style/WidgetOverlayTheme" />
+        <activity android:name=".WidgetOverlayActivity" android:exported="false"
+            android:excludeFromRecents="true" android:theme="@style/WidgetOverlayTheme"
+            android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode">
+            <meta-data android:name="io.flutter.embedding.android.NormalTheme" android:resource="@style/WidgetOverlayTheme" />
+        </activity>
+        <receiver android:name=".WidgetActionReceiver" android:exported="false" />
+        <service
+            android:name=".BuiltinServerService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Runs the user's own coding-agent server (OpenCode) inside the app, on this device only, while they use other apps." />
+        </service>
+        <service
+            android:name=".SetupService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Installs the user's own coding agent (OpenCode) inside the app, on this device only, and keeps the install going while they use other apps." />
+        </service>
+        <service
+            android:name=".BackgroundConnectionService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync|shortService" />
+        <receiver
+            android:name=".CodingActionReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".StatusActionReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".LivePauseReceiver"
+            android:exported="false" />
+        <!-- Quick Settings tile: reads the cached needs-attention count the
+             app writes and opens Activity on tap. The permission is what lets
+             only the system bind it. -->
+        <service
+            android:name=".AttentionTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_monochrome"
+            android:label="@string/tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <!-- Quick Settings tile: pause or resume background mode, the same
+             pause as the live notification's button. -->
+        <service
+            android:name=".PauseTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_monochrome"
+            android:label="@string/pause_tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <receiver
+            android:name=".SessionsWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_sessions_info" />
+        </receiver>
+        <receiver
+            android:name=".SessionsWideWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_label_wide">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_sessions_wide_info" />
+        </receiver>
+        <receiver
+            android:name=".SessionsListWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_label_list">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_sessions_list_info" />
+        </receiver>
+        <receiver
+            android:name=".SessionsStripWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_label_strip">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_sessions_strip_info" />
+        </receiver>
+        <receiver
+            android:name=".UsageWidgetProvider"
+            android:exported="true"
+            android:label="@string/usage_widget_title">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_usage_info" />
+        </receiver>
+        <receiver
+            android:name=".UsageWideWidgetProvider"
+            android:exported="true"
+            android:label="@string/usage_widget_title_wide">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_usage_wide_info" />
+        </receiver>
+        <receiver
+            android:name=".StatusWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_label_status">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_status_info" />
+        </receiver>
+        <!-- Don't delete the meta-data below.
+             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+        <service
+            android:name=".LocalPdfService"
+            android:exported="false"
+            android:isolatedProcess="true"
+            android:process=":local_pdf" />
+        <receiver android:name=".BuiltinIdleReceiver" android:exported="false" />
+    </application>
+    <!-- Required to query activities that can process text, see:
+         https://developer.android.com/training/package-visibility and
+         https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
+
+         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
+</manifest>

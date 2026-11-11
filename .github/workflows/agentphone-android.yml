@@ -1,0 +1,143 @@
+name: agentphone-android
+
+# One workflow for the fork: quality gate on every push and pull request,
+# signed release APK on a version tag.
+#
+# The phone cannot build APKs (aapt2 has no linux-arm64 build), so this
+# runner is the compiler. Versions are pinned: never "latest".
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  FLUTTER_VERSION: "3.47.2"
+  JAVA_VERSION: "17"
+  KEYSTORE_PATH: keystore/agentphone-release.p12
+
+jobs:
+  quality:
+    name: analyze, test and gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba10b1 # v7.0.1
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      # The upstream repository keeps its own formatting; the gate therefore
+      # checks the Dart files this push touched, not the whole tree.
+      - name: Format check (the files this push touched)
+        run: |
+          set -euo pipefail
+          base="$(git rev-parse --verify HEAD~1 2>/dev/null || true)"
+          if [ -n "$base" ]; then
+            git diff --name-only --diff-filter=ACMR "$base" HEAD -- '*.dart' \
+              | xargs -r dart format --output=none --set-exit-if-changed
+          fi
+
+      - name: Static analysis
+        run: flutter analyze
+
+      - name: Unit tests
+        run: flutter test --no-pub --concurrency=1
+
+      - name: Repository gates (permissions, analytics, secrets, licenses)
+        run: python3 tool/verify/verify_all.py
+
+  release:
+    name: signed release APK
+    needs: quality
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba10b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ env.FUTTER_VERSION }}
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      # The keystore comes from a repository secret and never from the tree.
+      - name: Restore signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.AGENTPHONE_KEYSTORE_B64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.AGENTPHONE_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.AGENTPHONE_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          if [ -z "${KEYSTORE_B64}" ]; then
+            echo "::error::AGENTPHONE_KEYSTORE_B64 is missing from the repository secrets"
+            exit 1
+          fi
+          mkdir -p keystore
+          printf '%s' "${KEYSTORE_B64}" | base64 -d > "${KEYSTORE_PATH}"
+          chmod 600 "${KEYSTORE_PATH}"
+          {
+            echo "keyAlias=${KEY_ALIAS}"
+            echo "keyPassword=${KEYSTORE_PASSWORD}"
+            echo "storeFile=${KEYSTORE_PATH}"
+            echo "storePassword=${KEYSTORE_PASSWORD}"
+            echo "storeType=PKCS12"
+          } > android/key.properties
+
+      - name: Build signed APKs
+        run: flutter build apk --release --split-per-abi
+
+      - name: Checksums
+        run: |
+          cd build/app/outputs/flutter-apk
+          sha256sum *.apk > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: agentphone-apk
+          path: |
+            build/app/outputs/flutter-apk/*.apk
+            build/app/outputs/flutter-apk/SHA256SUMS
+          if-no-files-found: error
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          cd build/app/outputs/flutter-apk
+          git archive --format=zip --output="../../../../agentphone-source-${TAG}.zip" HEAD
+          sha256sum *.apk "../../../../agentphone-source-${TAG}.zip" > "SHA256SUMS-${TAG}.txt"
+          cd ../../../../..
+          gh release create "${TAG}" \
+            --title "AgentPhone ${TAG}" \
+            --generate-notes \
+            build/app/outputs/flutter-apk/*.apk \
+            build/app/outputs/flutter-apk/SHA256SUMS \
+            "agentphone-source-${TAG}.zip" \
+            "SHA256SUMS-${TAG}.txt"

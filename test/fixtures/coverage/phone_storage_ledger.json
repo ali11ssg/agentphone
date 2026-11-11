@@ -1,0 +1,8 @@
+{
+  "gate.accessAfterAllow": "shown",
+  "gate.accessGranted": "shown",
+  "gate.confinedRunning": "shown",
+  "gate.restartBack": "shown",
+  "gate.server": "shown",
+  "gate.workRunning": "shown"
+}
