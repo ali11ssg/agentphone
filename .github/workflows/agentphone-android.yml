@@ -25,8 +25,11 @@ env:
   KEYSTORE_PATH: keystore/agentphone-release.p12
 
 jobs:
-  quality:
-    name: analyze, test and gates
+  # Setup, formatting and static analysis. Everything that reads the tree
+  # rather than running it lives here, so the slow part below can run in
+  # parallel shards.
+  analyze:
+    name: format and analyze
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
@@ -57,15 +60,51 @@ jobs:
       - name: Static analysis
         run: flutter analyze
 
-      - name: Unit tests
-        run: flutter test --no-pub --concurrency=4
+  # The suite is about 1600 files. Splitting it across six runners changes
+  # the wall clock, not the coverage: every file still runs exactly once, and
+  # a failure in any shard fails the job.
+  tests:
+    name: unit tests (shard ${{ matrix.shard }} of ${{ strategy.job-total }})
+    needs: analyze
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-java@v6.2.0
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+      - uses: subosito/flutter-action@v2.23.0
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
 
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Unit tests
+        run: |
+          flutter test --no-pub --concurrency=2 \
+            --total-shards ${{ strategy.job-total }} \
+            --shard-index ${{ matrix.shard }}
+
+  # Repository-level gates: the permission allowlist, no analytics, no
+  # secrets in the tree, licences.
+  gates:
+    name: repository gates
+    needs: analyze
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
       - name: Repository gates (permissions, analytics, secrets, licenses)
         run: python3 tool/verify/verify_all.py
 
   release:
     name: signed release APK
-    needs: quality
+    needs: [analyze, tests, gates]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
