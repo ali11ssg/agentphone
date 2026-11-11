@@ -79,7 +79,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6.4.1
       - uses: subosito/flutter-action@v2.23.0
         with:
-          flutter-version: ${{ env.FUTTER_VERSION }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
       - name: Resolve dependencies
@@ -135,7 +135,7 @@ jobs:
           cd build/app/outputs/flutter-apk
           git archive --format=zip --output="../../../../agentphone-source-${TAG}.zip" HEAD
           sha256sum *.apk "../../../../agentphone-source-${TAG}.zip" > "SHA256SUMS-${TAG}.txt"
-          cd ../../../../..
+          cd ../../../..
           gh release create "${TAG}" \
             --title "AgentPhone ${TAG}" \
             --generate-notes \
